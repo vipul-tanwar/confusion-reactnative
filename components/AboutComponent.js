@@ -4,13 +4,13 @@ import { Card, ListItem } from 'react-native-elements';
 import { LEADERS } from '../shared/leaders';
 import { connect } from 'react-redux';
 import { baseUrl} from '../shared/baseUrl';
+import { Loading } from './LoadingComponent';
 
 const mapStateToProps = state => {
     return {
         leaders: state.leaders
     }
 }
-
 
 function History() {
     return(
@@ -46,19 +46,35 @@ function CorporateLeadership(props){
             )
 
         }
-    
-        return (
-            <Card title='Corporate Leadership'>
-                <FlatList 
-                data={leaders}
-                renderItem={renderLeader}
-                keyExtractor={item => item.id.toString()}
-                />
-            </Card>
-        )
-    }
 
-  
+        if (props.isLoading) {
+            return(
+                    <Card
+                        title='Corporate Leadership'>
+                        <Loading />
+                    </Card>
+            );
+        }
+        else if (props.errMess) {
+            return(
+                    <Card
+                        title='Corporate Leadership'>
+                        <Text>{props.errMess}</Text>
+                    </Card>
+            );
+        }
+        else {
+            return (
+                <Card title='Corporate Leadership'>
+                    <FlatList 
+                    data={leaders}
+                    renderItem={renderLeader}
+                    keyExtractor={item => item.id.toString()}
+                    />
+                </Card>
+            )
+        }
+    }
 }
 
 class About extends Component {
@@ -71,7 +87,10 @@ class About extends Component {
         return(
         <ScrollView>
             <History/>
-            <CorporateLeadership leaders={this.props.leaders.leaders}/>
+            <CorporateLeadership 
+            leaders={this.props.leaders.leaders} 
+            isLoading={this.props.leaders.isLoading}
+            errMess={this.props.leaders.errMess}/>
         </ScrollView>
         )
     }
