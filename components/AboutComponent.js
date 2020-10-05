@@ -14,7 +14,7 @@ const mapStateToProps = state => {
 
 function History() {
     return(
-        <Card title='Our History' >
+        <Card  titleStyle={{ fontSize: 16 }} title='Our History' >
             <Text style={{margin:10}}>
             Started in 2010, Ristorante con Fusion quickly established itself as a culinary 
             icon par excellence in Hong Kong. With its unique brand of world fusion cuisine
@@ -50,7 +50,8 @@ function CorporateLeadership(props){
         if (props.isLoading) {
             return(
                     <Card
-                        title='Corporate Leadership'>
+                    titleStyle={{ fontSize: 16 }}
+                    title='Corporate Leadership'>
                         <Loading />
                     </Card>
             );
@@ -58,14 +59,17 @@ function CorporateLeadership(props){
         else if (props.errMess) {
             return(
                     <Card
-                        title='Corporate Leadership'>
+                    titleStyle={{ fontSize: 16 }}
+                    title='Corporate Leadership'>
                         <Text>{props.errMess}</Text>
                     </Card>
             );
         }
         else {
             return (
-                <Card title='Corporate Leadership'>
+                <Card 
+                titleStyle={{ fontSize: 16 }}
+                title='Corporate Leadership'>
                     <FlatList 
                     data={leaders}
                     renderItem={renderLeader}

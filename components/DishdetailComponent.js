@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { Text, View, ScrollView, FlatList } from 'react-native';
-import { Card, Icon } from 'react-native-elements';
+import { Text, View, ScrollView, FlatList, Modal, Button, StyleSheet } from 'react-native';
+import { Card, Icon, Rating, Input } from 'react-native-elements';
 import { DISHES } from '../shared/dishes';
 import { COMMENTS } from '../shared/comments';
 import { connect } from 'react-redux';
 import { baseUrl } from '../shared/baseUrl';
-import { postFavorite } from '../redux/ActionCreators'
+import { postFavorite, postComment } from '../redux/ActionCreators'
 
 const mapStateToProps = state => {
     return {
@@ -16,11 +16,14 @@ const mapStateToProps = state => {
 } 
 
 const mapDispatchToProps = dispatch => ({
-    postFavorite: (dishId) => dispatch(postFavorite(dishId))
+    postFavorite: (dishId) => dispatch(postFavorite(dishId)),
+    postComment: (dishId, rating, author, comment) => dispatch(postComment(dishId, rating, author, comment))
 })
 
-function RenderDish(props) {
 
+
+function RenderDish(props) {
+    
     const dish = props.dish;
     
         if (dish != null) {
@@ -31,14 +34,27 @@ function RenderDish(props) {
                 <Text style={{margin: 10}}>
                     {dish.description}
                 </Text>
-                <Icon
-                    raised 
-                    reverse
-                    name={props.favorite ? 'heart' : 'heart-o'}
-                    type='font-awesome'
-                    color='#f50'
-                    onPress={() => props.favorite ? console.log('Already favourite') : props.onPress()}
-                />
+                <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+                    <Icon
+                        raised 
+                        reverse
+                        name={props.favorite ? 'heart' : 'heart-o'}
+                        type='font-awesome'
+                        color='#f50'
+                        onPress={() => props.favorite ? console.log('Already favourite') : props.onPress()}
+                    />
+  
+                        <Icon
+                        raised 
+                        reverse
+                        name= 'pencil'
+                        type='font-awesome'
+                        color='#512DA8'
+                        onPress={() => props.onPressComment()}
+                        />
+                        
+                </View>
+
                 </Card>
             );
         }
@@ -78,19 +94,103 @@ class Dishdetail extends Component {
 
     static navigationOptions = {
         title: 'Dish Details'
-    };
+    }
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            rating: 3,
+            author: '',
+            comment: '',
+            showModal: false
+        }
+    }
+
+    toggleModal() {
+        this.setState({showModal: !this.state.showModal});
+    }
+
+    resetForm() {
+        this.setState({
+            rating: 3,
+            author: '',
+            comment: '',
+            showModal: false
+        });
+    }
+
+    handleComment(dishId){
+        this.props.postComment(dishId, this.state.rating, this.state.author, this.state.comment);
+        this.toggleModal();
+        this.resetForm();
+    } 
+
 
     render() {
         const dishId = this.props.navigation.getParam('dishId','');
         return(
+            
             <ScrollView>
                 <RenderDish dish={this.props.dishes.dishes[+dishId]} 
                 favorite={this.props.favorites.some(el => el === dishId)} 
-                onPress={() => this.markFavorite(dishId)}/>
+                onPress={() => this.markFavorite(dishId)}
+                onPressComment={() => this.toggleModal() }/>
                 <RenderComments comments={this.props.comments.comments.filter((comment) => comment.dishId === dishId)} />
+                <Modal 
+                    animationType = {"slide"} 
+                    transparent = {false}
+                    visible = {this.state.showModal}
+                    onDismiss = {() => this.toggleModal() }
+                    onRequestClose = {() => this.toggleModal() }>
+                <View style={styles.modal}>
+                   <Rating
+                     imageSize={30}
+                     startingValue={3}
+                     showRating
+                     onFinishRating={(rating) => this.setState({rating: rating})}
+                     style={{ paddingVertical: 10 }}
+                    />
+                    <View>
+                    <Input 
+                        placeholder="Author" 
+                        onChangeText={(value) => this.setState({author: value})}
+                        leftIcon={{ type: "font-awesome", name: "user-o", marginRight: 10 }} />
+                    </View>
+                    <Input placeholder="Comment"
+                        onChangeText={(value) => this.setState({comment: value})}
+                        leftIcon={{ type: "font-awesome", name: "comment-o", marginRight: 10 }} />
+                    <View style={styles.modalButton}>
+                        <Button 
+                        onPress = {() =>{this.handleComment(dishId);}}
+                        color="#512DA8"
+                        title="SUBMIT" 
+                        ></Button>
+                    </View>
+                    <View style={styles.modalButton}>
+                        <Button
+                        onPress = {() =>{this.toggleModal();}}
+                        color="#512DA8"
+                        title="CANCEL" 
+                        color="grey"
+                        ></Button> 
+                    </View>
+                    
+                </View>
+                </Modal>
             </ScrollView>
         );
     }
 }
+
+const styles =StyleSheet.create({
+    modal: {
+        margin:20
+    },
+    modalButton:{ 
+        marginHorizontal: 10,
+        marginTop: 20
+    }
+})
+
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dishdetail);
