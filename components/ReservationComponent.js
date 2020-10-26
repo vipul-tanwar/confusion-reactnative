@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Text, View, ScrollView, StyleSheet, Picker, Switch, Button, Modal,Alert } from 'react-native';
+import { Text, View, ScrollView, StyleSheet, Picker, Switch, Button, Modal,Alert, Platform } from 'react-native';
 import { Card } from 'react-native-elements';
 import DatePicker from 'react-native-datepicker';
 import * as Animatable from 'react-native-animatable';
 import * as Permissions from 'expo-permissions';
+import * as Calendar from 'expo-calendar';
 import { Notifications } from 'expo';
 
 
@@ -52,6 +53,7 @@ class Reservation extends Component {
                     text: 'OK',
                     onPress: () => { 
                             this.presentLocalNotification(this.state.date);
+                            this.addReservationToCalendar(this.state.date);
                             this.confirmReservation(); 
                     }
                 }
@@ -59,6 +61,82 @@ class Reservation extends Component {
             { cancelable: false }
         )
     }
+
+    
+    
+
+
+    // ===============
+
+    async obtainCalendarPermission() {
+        let permission = await Permissions.getAsync(Permissions.CALENDAR);
+        if (permission.status !== 'granted') {
+            permission = await Permissions.askAsync(Permissions.CALENDAR);
+            if (permission.status !== 'granted') {
+                Alert.alert('Permission not granted to access the calendar');
+            }
+        }
+        return permission;
+    }
+
+    async addReservationToCalendar(date) {
+        await this.obtainCalendarPermission();
+        let dateMs = Date.parse(date);
+        let startDate = new Date(dateMs);
+        let endDate = new Date(dateMs + 2 * 60 * 60 * 1000);
+        const defaultCalendarSource = Platform.OS === 'ios' ? await getDefaultCalendarSource() 
+        : { isLocalAccount: true, name: 'Expo Calendar' };
+        let details = {
+            title: 'Con Fusion Table Reservation',
+            source: defaultCalendarSource,
+            name: 'internalCalendarName',
+            color: 'blue',
+            entityType: Calendar.EntityTypes.EVENT,
+            sourceId: defaultCalendarSource.id,
+            ownerAccount: 'personal',
+            accessLevel: Calendar.CalendarAccessLevel.OWNER,
+        }
+      
+        const calendarId = await Calendar.createCalendarAsync(details);
+
+        await Calendar.createEventAsync(calendarId , {
+            title: 'Con Fusion Table Reservation',
+            startDate: startDate,
+            endDate: endDate,
+            timeZone: 'Asia/Hong_Kong',
+            location: '121, Clear Water Bay Road, Clear Water Bay, Kowloon, Hong Kong'
+        });
+      
+    }
+    
+    // ===============
+    // async obtainCalendarPermission() {
+    //     let permission = await Permissions.getAsync(Permissions.CALENDAR);
+    //     if (permission.status !== 'granted') {
+    //         permission = await Permissions.askAsync(Permissions.CALENDAR);
+    //         if (permission.status !== 'granted') {
+    //             Alert.alert('Permission not granted to access the calendar');
+    //         }
+    //     }
+    //     return permission;
+    // }
+
+    // async addReservationToCalendar(date) {
+    //     await this.obtainCalendarPermission();
+    //     const startDate = new Date(Date.parse(date));
+    //     const endDate = new Date(Date.parse(date) + (2 * 60 * 60 * 1000));
+    //     const calendarId = date;
+    //     Calendar.createEventAsync( calendarId,
+    //       {
+    //         title: 'Con Fusion Table Reservation',
+    //         location: '121, Clear Water Bay Road, Clear Water Bay, Kowloon, Hong Kong',
+    //         startDate: startDate,
+    //         endDate: endDate,
+    //         timeZone: 'Asia/Hong_Kong'
+    //       },
+    //     );
+    //     Alert.alert('Reservation has been added to your Calendar');
+    // }
 
     async obtainNotificationPermission() {
         let permission = await Permissions.getAsync(Permissions.USER_FACING_NOTIFICATIONS);
@@ -87,6 +165,11 @@ class Reservation extends Component {
         });
     }
     
+    
+
+    
+
+
     render() {
         return(
             <Animatable.View animation="zoomIn" duration={1000} >

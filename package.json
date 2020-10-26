@@ -30,7 +30,8 @@
     "redux-thunk": "^2.2.0",
     "expo-mail-composer": "~7.0.0",
     "expo-image-picker": "~7.0.0",
-    "expo-image-manipulator": "~7.0.0"
+    "expo-image-manipulator": "~7.0.0",
+    "expo-calendar": "~7.0.0"
   },
   "devDependencies": {
     "babel-preset-expo": "^5.0.0"

@@ -150,6 +150,23 @@ class RegisterTab extends Component {
         }
     }
 
+    
+    getImageFromGallery = async () => {
+        const cameraRollPermission = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+        if(cameraRollPermission.status === 'granted'){
+            let galleryImage = await  ImagePicker.launchImageLibraryAsync({
+                allowsEditing: true,
+                aspect: [4, 3]
+            });
+
+            if(!galleryImage.cancelled){
+                this.processImage(galleryImage.uri);
+            }
+        }
+    }
+
+
     processImage = async (imageUri) => {
         let processedImage = await ImageManipulator.manipulateAsync(
             imageUri, 
@@ -194,11 +211,16 @@ class RegisterTab extends Component {
                     <Image
                         source={{uri: this.state.imageUrl}}
                         loadingIndicatorSource={require('./images/logo.png')}
-                        style={styles.image}/>
+                        style={styles.image}
+                    />
                     <Button
                         title='Camera'
                         onPress={this.getImageFromCamera}
-                        />    
+                    /> 
+                    <Button
+                        title='Galley'
+                        onPress={this.getImageFromGallery}
+                    />                     
                 </View>
                 <Input
                     placeholder="Username"
@@ -282,7 +304,8 @@ const styles = StyleSheet.create({
     imageContainer: {
         flex: 1,
         flexDirection: 'row',
-        margin: 20
+        margin: 20,
+        justifyContent: 'space-around'
     },
     image: {
         margin: 10,
